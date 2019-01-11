@@ -1,41 +1,61 @@
 package main
 
 import (
-	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
-	"io"
-	"log"
 	"os"
-	"strings"
 )
 
 func main() {
-	csvFile, _ := os.Open("problems.csv")
-	reader := csv.NewReader(bufio.NewReader(csvFile))
-	userReader := bufio.NewReader(os.Stdin)
-	var lineCount = 0
+	var fileName = flag.String("filename", "problems.csv", "Name of CSV file")
+	flag.Parse()
+
+	csvFile, err := os.Open(*fileName)
+	if err != nil {
+		exit(fmt.Sprintf("Failed to open file with name: %s\n", *fileName))
+	}
+
+	reader := csv.NewReader(csvFile)
+	lines, err := reader.ReadAll()
+	if err != nil {
+		exit("Failed to parse the CSV file.")
+	}
+
+	problems := parseLines(lines)
 	var correctAnswerCount = 0
-	for {
-		line, error := reader.Read()
-			if error == io.EOF {
-				break //End of file, stop looping
-		} else if error != nil {
-			log.Fatal(error) // Something went wrong, log fatal error
-			}
-		lineCount += 1
-		fmt.Println(line[0])
-		text, _ := userReader.ReadString('\n')
-		text = strings.TrimSpace(text)
-		if text == line[1] {
-			fmt.Println("Correct!")
-			correctAnswerCount += 1
-		} else {
-			fmt.Println("Uh oh, that's not right")
+
+	for i, p := range problems {
+		fmt.Printf("Problem #%d: %s = \n", i+1, p.q)
+		var answer string
+		fmt.Scanf("%s\n", &answer)
+		if answer == p.a {
+			correctAnswerCount++
 		}
 	}
 
 	msg := "Your Score: %d / %d"
-	result := fmt.Sprintf(msg, correctAnswerCount, lineCount)
+	result := fmt.Sprintf(msg, correctAnswerCount, len(problems))
 	fmt.Println(result)
+}
+
+func parseLines(lines [][]string) []problem {
+	problems := make([]problem, len(lines))
+	for i, line := range lines {
+		problems[i] = problem {
+			q: line[0],
+			a: line[1],
+		}
+	}
+	return problems
+}
+
+type problem struct {
+	q string
+	a string
+}
+
+func exit(msg string) {
+	fmt.Println(msg)
+	os.Exit(1)
 }

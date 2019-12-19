@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,6 +13,9 @@ import (
 )
 
 func main() {
+	csvFilename := flag.String("filename", "problems.csv", "The CSV file's name in the format of 'question,answer'")
+	flag.Parse()
+
 	fmt.Println("Press enter to start the quiz")
 	buf := bufio.NewReader(os.Stdin)
 	_, err := buf.ReadBytes('\n')
@@ -19,12 +23,12 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		quiz()
+		quiz(csvFilename)
 	}
 }
 
-func quiz() {
-	data, err := ioutil.ReadFile("./problems.csv")
+func quiz(fileName *string) {
+	data, err := ioutil.ReadFile(*fileName)
 
 	if err != nil {
 		panic(err)

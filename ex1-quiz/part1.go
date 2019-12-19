@@ -12,7 +12,20 @@ import (
 )
 
 func main() {
+	fmt.Println("Press enter to start the quiz")
+	buf := bufio.NewReader(os.Stdin)
+	_, err := buf.ReadBytes('\n')
+
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		quiz()
+	}
+}
+
+func quiz() {
 	data, err := ioutil.ReadFile("./problems.csv")
+
 	if err != nil {
 		panic(err)
 	}
